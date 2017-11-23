@@ -8,8 +8,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.ConfigurableApplicationContext;
 
-@EnableFeignClients
-@EnableDiscoveryClient
 @SpringBootApplication
 public class StockMarketServiceApplication {
     private final static Logger LOGGER = LoggerFactory.getLogger(StockMarketServiceApplication.class);
