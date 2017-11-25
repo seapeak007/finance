@@ -19,9 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class StockInfoController {
 
     private Gson gson = new Gson();
+    private SnowBallLoginUtil snowBallLoginUtil ;
+
+    public StockInfoController(SnowBallLoginUtil snowBallLoginUtil){
+        this.snowBallLoginUtil = snowBallLoginUtil;
+    }
+
     @GetMapping("/infos")
     public void getStockInfos(){
-        HttpClientUtil httpClientUtil = SnowBallLoginUtil.sbLogin() ;
+
+        HttpClientUtil httpClientUtil = snowBallLoginUtil.sbLogin() ;
         String url = "http://xueqiu.com/stock/quote_order.json?order=asc&exchange=CN&stockType=sza&column=symbol&orderBy=amount";
         try {
             readStock(httpClientUtil,url);
