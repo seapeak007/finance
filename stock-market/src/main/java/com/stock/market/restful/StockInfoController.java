@@ -1,8 +1,7 @@
 package com.stock.market.restful;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.stock.market.service.StockInfoService;
 import com.stock.market.utils.HttpClientUtil;
 import com.stock.market.utils.SnowBallLoginUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,55 +17,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/stock")
 public class StockInfoController {
 
-    private Gson gson = new Gson();
     private SnowBallLoginUtil snowBallLoginUtil ;
+    private StockInfoService stockInfoService ;
 
-    public StockInfoController(SnowBallLoginUtil snowBallLoginUtil){
+    public StockInfoController(SnowBallLoginUtil snowBallLoginUtil,StockInfoService stockInfoService){
         this.snowBallLoginUtil = snowBallLoginUtil;
+        this.stockInfoService = stockInfoService ;
     }
 
     @GetMapping("/infos")
-    public void getStockInfos(){
+    public String getStockInfos(){
 
+        JsonObject  jsonObject = new JsonObject() ;
         HttpClientUtil httpClientUtil = snowBallLoginUtil.sbLogin() ;
-        String url = "http://xueqiu.com/stock/quote_order.json?order=asc&exchange=CN&stockType=sza&column=symbol&orderBy=amount";
         try {
-            readStock(httpClientUtil,url);
+            stockInfoService.readStock(httpClientUtil,"SH");
+            stockInfoService.readStock(httpClientUtil,"SZ");
+            jsonObject.addProperty("flag","success") ;
+            log.info("getStockInfos success");
         } catch (Exception e) {
             e.printStackTrace();
+            jsonObject.addProperty("flag","fail") ;
+            jsonObject.addProperty("error",e.getMessage());
+            log.error("save stockinfos error:"+e);
         }
+        return jsonObject.toString() ;
     }
 
-    private  void readStock( HttpClientUtil clientUtil, String url ) throws Exception
-    {
-        int page = 1;
-        int pageSize = 90;
-
-        while ( true )
-        {
-            String tmpUrl = url + "&page=" + ( page++ ) + "&size=" + pageSize;
-
-            String result = clientUtil.get( tmpUrl );
-
-            JsonObject jsonObject =  gson.fromJson(result,JsonObject.class);
-
-            JsonArray dataArray = jsonObject.getAsJsonArray("data") ;
-
-            if ( dataArray.size() == 0 )
-            {
-                break;
-            }
-
-            for ( int i = 0; i < dataArray.size(); i++ )
-            {
-                JsonArray stockDataArray = dataArray.get(i).getAsJsonArray() ;
-
-                String stockInfo = stockDataArray.get(0).getAsString();
-                log.info(stockInfo);
-
-//                recordStockInfo( stockInfo.substring( 2 ), stockInfo.substring( 0, 2 ) );
-            }
-        }
-
-    }
 }
